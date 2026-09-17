@@ -6,7 +6,7 @@
   "type": "commonjs",
   "scripts": {
     "start": "node src/server.js",
-    "dev": "nodemon src/server.js",
+    "dev": "nodemon --watch src src/server.js",
     "test": "node scripts/test-phase3f.js"
   },
   "dependencies": {

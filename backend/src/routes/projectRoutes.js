@@ -8,6 +8,7 @@ const {
   getAllProjects,
   getProjectById,
   updateProject,
+  deleteProject,
 } = require('../controllers/projectController');
 
 // POST   /api/projects       — create project
@@ -18,8 +19,10 @@ router.route('/')
 
 // GET    /api/projects/:id   — get single project
 // PUT    /api/projects/:id   — update project
+// DELETE /api/projects/:id   — delete project & cascade cleanup
 router.route('/:id')
   .get(getProjectById)
-  .put(updateProject);
+  .put(updateProject)
+  .delete(deleteProject);
 
 module.exports = router;

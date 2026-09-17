@@ -47,6 +47,12 @@ const projectSchema = new mongoose.Schema(
       default: null,
     },
 
+    type: {
+      type: String,
+      trim: true,
+      default: 'Residential',
+    },
+
     createdBy: {
       type: mongoose.Schema.Types.ObjectId,
       ref: 'User',

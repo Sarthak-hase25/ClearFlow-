@@ -1,7 +1,12 @@
 'use strict';
 
-const mongoose = require('mongoose');
-const Project  = require('../models/Project');
+const mongoose      = require('mongoose');
+const Project       = require('../models/Project');
+const Communication = require('../models/Communication');
+const Insight       = require('../models/Insight');
+const Action        = require('../models/Action');
+const Decision      = require('../models/Decision');
+const Risk          = require('../models/Risk');
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 
@@ -106,4 +111,47 @@ async function updateProject(req, res, next) {
   }
 }
 
-module.exports = { createProject, getAllProjects, getProjectById, updateProject };
+/**
+ * DELETE /api/projects/:id
+ * Delete a project and cascade delete all associated communications,
+ * insights, actions, decisions, and risks to preserve data integrity.
+ */
+async function deleteProject(req, res, next) {
+  try {
+    const { id } = req.params;
+
+    if (!isValidObjectId(id)) {
+      return res.status(400).json({ success: false, message: 'Invalid project ID' });
+    }
+
+    const project = await Project.findByIdAndDelete(id);
+    if (!project) {
+      return res.status(404).json({ success: false, message: 'Project not found' });
+    }
+
+    // Cascade delete all dependent intelligence and communications
+    await Promise.all([
+      Communication.deleteMany({ projectId: id }),
+      Insight.deleteMany({ projectId: id }),
+      Action.deleteMany({ projectId: id }),
+      Decision.deleteMany({ projectId: id }),
+      Risk.deleteMany({ projectId: id }),
+    ]);
+
+    res.json({
+      success: true,
+      message: 'Project deleted',
+      data: { id: project._id },
+    });
+  } catch (err) {
+    next(err);
+  }
+}
+
+module.exports = {
+  createProject,
+  getAllProjects,
+  getProjectById,
+  updateProject,
+  deleteProject,
+};

@@ -15,26 +15,25 @@ async function connectDB() {
     );
   }
 
-  try {
-    let conn;
+  let attempts = 0;
+  while (attempts < 3) {
+    attempts++;
     try {
-      conn = await mongoose.connect(uri, {
+      const conn = await mongoose.connect(uri, {
         serverSelectionTimeoutMS: 5000,
         family: 4,
       });
-    } catch {
-      // Retry once with slightly more headroom if initial DNS resolution had network latency
-      console.log('MongoDB initial connect timed out, retrying...');
-      conn = await mongoose.connect(uri, {
-        serverSelectionTimeoutMS: 15000,
-        family: 4,
-      });
-    }
 
-    console.log(`✅  MongoDB connected: ${conn.connection.host}`);
-  } catch (err) {
-    console.error(`❌  MongoDB connection failed: ${err.message}`);
-    throw err; // bubble up so server.js can handle the startup failure
+      console.log(`✅  MongoDB connected: ${conn.connection.host}`);
+      return conn;
+    } catch (err) {
+      if (attempts >= 3) {
+        console.error(`❌  MongoDB connection failed: ${err.message}`);
+        throw err;
+      }
+      console.log(`MongoDB connect attempt ${attempts} timed out, retrying in 2s...`);
+      await new Promise(r => setTimeout(r, 2000));
+    }
   }
 }
 

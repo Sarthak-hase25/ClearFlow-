@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import {
   Plus, MapPin, MessageSquare, Zap, CheckCircle, AlertTriangle,
-  ArrowLeft, ArrowRight, Clock, Sparkles
+  ArrowLeft, ArrowRight, Clock, Sparkles, Trash2
 } from 'lucide-react';
 import { useApp } from '../hooks/useAppState';
 import { SourceBadge, ProjectStatusBadge, PriorityBadge, SeverityBadge, StatusBadge } from '../components/ui/Badges';
@@ -24,6 +24,7 @@ export default function ProjectDetail() {
     updateDecisionStatus,
     loadingProjects,
     analyzeExistingCommunication,
+    deleteProject,
   } = useApp();
 
   const [activeTab, setActiveTab] = useState('overview'); // overview | communications | actions | decisions | risks
@@ -67,6 +68,18 @@ export default function ProjectDetail() {
   const openDecisions   = decisions.filter(d => d.status === 'pending');
   const recentComms     = communications.slice(0, 4);
 
+  const handleDeleteProject = async () => {
+    if (!window.confirm(`Are you sure you want to delete "${project.name}"?\n\nThis will permanently delete the project and all associated communications, insights, actions, decisions, and risks.`)) {
+      return;
+    }
+    try {
+      await deleteProject(project.id);
+      navigate('/projects');
+    } catch (err) {
+      alert(err.message || 'Failed to delete project.');
+    }
+  };
+
   return (
     <div className="animate-fade-in space-y-7">
 
@@ -108,6 +121,15 @@ export default function ProjectDetail() {
             </div>
 
             <div className="flex items-center gap-2.5 flex-shrink-0 self-start sm:self-center">
+              <button
+                type="button"
+                onClick={handleDeleteProject}
+                className="btn-secondary text-xs text-gray-500 hover:text-red-600 hover:border-red-200 hover:bg-red-50"
+                title="Delete Project"
+              >
+                <Trash2 className="w-3.5 h-3.5" />
+                <span>Delete</span>
+              </button>
               <button
                 onClick={() => navigate(`/projects/${id}/add-communication`)}
                 className="btn-primary text-xs shadow-sm"

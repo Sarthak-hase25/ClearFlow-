@@ -13,6 +13,11 @@
 
 'use strict';
 
+const dns = require('node:dns');
+if (dns.setDefaultResultOrder) {
+  dns.setDefaultResultOrder('ipv4first');
+}
+
 // ─── 1. Environment Variables ─────────────────────────────────────────────────
 require('dotenv').config();
 

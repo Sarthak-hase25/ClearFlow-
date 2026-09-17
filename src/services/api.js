@@ -36,12 +36,25 @@ export const DISPLAY_TO_SOURCE_TYPE = {
 export function normalizeProject(p) {
   if (!p) return null;
   const id = p._id || p.id;
+  let type = p.type;
+  if (!type || type === 'Residential') {
+    const nameLower = (p.name || '').toLowerCase();
+    const descLower = (p.description || '').toLowerCase();
+    if (nameLower.includes('commercial') || descLower.includes('commercial') || descLower.includes('office')) {
+      type = 'Commercial';
+    } else if (nameLower.includes('resort') || nameLower.includes('hotel') || descLower.includes('hospitality')) {
+      type = 'Hospitality';
+    } else {
+      type = p.type || 'Residential';
+    }
+  }
+
   return {
     id,
     _id: id,
     name: p.name || 'Untitled Project',
     description: p.description || '',
-    type: p.type || 'Residential',
+    type,
     status: p.status || 'active',
     location: p.location || '',
     clientName: p.clientName || '',
@@ -220,6 +233,10 @@ export const api = {
       ...data,
       type: projectData.type || 'Residential',
     });
+  },
+
+  async deleteProject(id) {
+    return request(`/projects/${id}`, { method: 'DELETE' });
   },
 
   // ── Communications

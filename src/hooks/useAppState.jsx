@@ -264,6 +264,23 @@ export function AppProvider({ children }) {
     }
   };
 
+  // ─── Delete project via API ─────────────────────────────────
+  const deleteProject = async (projectId) => {
+    try {
+      await api.deleteProject(projectId);
+      setProjects(prev => prev.filter(p => p.id !== projectId && p._id !== projectId));
+      setComms(prev => prev.filter(c => c.projectId !== projectId));
+      setActions(prev => prev.filter(a => a.projectId !== projectId));
+      setDecisions(prev => prev.filter(d => d.projectId !== projectId));
+      setRisks(prev => prev.filter(r => r.projectId !== projectId));
+      setInsights(prev => prev.filter(i => i.projectId !== projectId));
+      return true;
+    } catch (err) {
+      console.error('[ArchFlow] Error deleting project:', err);
+      throw err;
+    }
+  };
+
   // ─── Add new communication via API ──────────────────────────
   const createCommunication = async (projectId, commData) => {
     try {
@@ -376,6 +393,7 @@ export function AppProvider({ children }) {
       addCommunicationWithInsight,
       analyzeExistingCommunication,
       addProject,
+      deleteProject,
       createCommunication,
       getProjectById,
       getProjectStats,

@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Plus, MapPin, MessageSquare, Zap, CheckCircle, AlertTriangle, X, ArrowRight } from 'lucide-react';
+import { Plus, MapPin, MessageSquare, Zap, CheckCircle, AlertTriangle, X, ArrowRight, Trash2 } from 'lucide-react';
 import { useApp } from '../hooks/useAppState';
 import { ProjectStatusBadge } from '../components/ui/Badges';
 import { Select } from '../components/ui/Select';
@@ -104,15 +104,15 @@ function NewProjectModal({ onClose, onSave }) {
   );
 }
 
-function ProjectCard({ project, stats }) {
+function ProjectCard({ project, stats, onDelete }) {
   const navigate = useNavigate();
   return (
-    <button
+    <div
       onClick={() => navigate(`/projects/${project.id}`)}
-      className="w-full text-left bg-white rounded-xl border border-gray-100 shadow-sm p-4 sm:p-5 hover:border-gray-200 hover:shadow-md transition-all duration-200 group cursor-pointer"
+      className="w-full text-left bg-white rounded-xl border border-gray-100 shadow-sm p-4 sm:p-5 hover:border-gray-200 hover:shadow-md transition-all duration-200 group cursor-pointer relative"
     >
       <div className="flex items-start justify-between gap-3 mb-3">
-        <div className="min-w-0">
+        <div className="min-w-0 flex-1">
           <div className="flex items-center gap-2 mb-1 flex-wrap">
             <ProjectStatusBadge status={project.status} />
             <span className="text-xs text-gray-400 font-medium">{project.type}</span>
@@ -121,7 +121,21 @@ function ProjectCard({ project, stats }) {
             {project.name}
           </h3>
         </div>
-        <ArrowRight className="w-4 h-4 text-gray-300 group-hover:text-blue-500 flex-shrink-0 mt-1 transition-colors" />
+        <div className="flex items-center gap-1.5 flex-shrink-0">
+          <button
+            type="button"
+            onClick={(e) => {
+              e.stopPropagation();
+              onDelete(project);
+            }}
+            title="Delete project"
+            className="p-1.5 text-gray-300 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors cursor-pointer"
+            aria-label={`Delete ${project.name}`}
+          >
+            <Trash2 className="w-4 h-4" />
+          </button>
+          <ArrowRight className="w-4 h-4 text-gray-300 group-hover:text-blue-500 transition-colors" />
+        </div>
       </div>
 
       {project.location && (
@@ -158,13 +172,26 @@ function ProjectCard({ project, stats }) {
         </div>
         <span className="sm:ml-auto text-[11px] text-gray-400 font-normal">{formatDate(project.createdAt)}</span>
       </div>
-    </button>
+    </div>
   );
 }
 
 export default function Projects() {
-  const { projects, addProject, getProjectStats, loadingProjects, apiError, refreshData } = useApp();
+  const { projects, addProject, deleteProject, getProjectStats, loadingProjects, apiError, refreshData } = useApp();
   const [showModal, setShowModal] = useState(false);
+
+  const handleDelete = async (project) => {
+    const confirmed = window.confirm(
+      `Are you sure you want to delete "${project.name}"?\n\nThis will permanently remove the project and all of its communications, insights, actions, decisions, and risks.`
+    );
+    if (!confirmed) return;
+
+    try {
+      await deleteProject(project.id);
+    } catch (err) {
+      alert(err.message || 'Failed to delete project.');
+    }
+  };
 
   const active   = projects.filter(p => p.status === 'active');
   const others   = projects.filter(p => p.status !== 'active');
@@ -219,7 +246,7 @@ export default function Projects() {
             <div>
               <p className="section-heading">Active</p>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {active.map(p => <ProjectCard key={p.id} project={p} stats={getProjectStats(p.id)} />)}
+                {active.map(p => <ProjectCard key={p.id} project={p} stats={getProjectStats(p.id)} onDelete={handleDelete} />)}
               </div>
             </div>
           )}
@@ -227,7 +254,7 @@ export default function Projects() {
             <div>
               <p className="section-heading">Other</p>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {others.map(p => <ProjectCard key={p.id} project={p} stats={getProjectStats(p.id)} />)}
+                {others.map(p => <ProjectCard key={p.id} project={p} stats={getProjectStats(p.id)} onDelete={handleDelete} />)}
               </div>
             </div>
           )}
