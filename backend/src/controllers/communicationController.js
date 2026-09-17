@@ -44,8 +44,7 @@ async function persistAnalysis(communication, analysis) {
   try {
     session = await mongoose.startSession();
     session.startTransaction();
-    useTransaction = true;
-  } catch (txErr) {
+  } catch {
     if (session) {
       session.endSession();
       session = null;
@@ -337,12 +336,28 @@ async function analyzeCommunicationHandler(req, res, next) {
       analysis = await analyzeCommunication(communication);
     } catch (aiErr) {
       console.error('[analyze-controller] AI analysis error:', aiErr.message);
-      const isConfigError = aiErr.message.includes('GEMINI_API_KEY');
-      return res.status(isConfigError ? 500 : 502).json({
+      const isConfigError = aiErr.message && aiErr.message.includes('GEMINI_API_KEY');
+      const isQuotaError =
+        aiErr.status === 429 ||
+        (aiErr.message && /429|resource_exhausted|quota|rate limit/i.test(aiErr.message));
+
+      if (isConfigError) {
+        return res.status(500).json({
+          success: false,
+          message: 'Gemini API key is not configured on the server.',
+        });
+      }
+
+      if (isQuotaError) {
+        return res.status(429).json({
+          success: false,
+          message: 'Gemini API free tier quota limit reached. Please wait a moment and try again.',
+        });
+      }
+
+      return res.status(502).json({
         success: false,
-        message: isConfigError
-          ? 'Gemini API key is not configured on the server'
-          : 'Failed to analyze communication with Gemini: ' + aiErr.message,
+        message: 'Failed to analyze communication with AI service. Please try again later.',
       });
     }
 

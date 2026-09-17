@@ -22,11 +22,11 @@ async function connectDB() {
         serverSelectionTimeoutMS: 5000,
         family: 4,
       });
-    } catch (firstErr) {
+    } catch {
       // Retry once with slightly more headroom if initial DNS resolution had network latency
       console.log('MongoDB initial connect timed out, retrying...');
       conn = await mongoose.connect(uri, {
-        serverSelectionTimeoutMS: 10000,
+        serverSelectionTimeoutMS: 15000,
         family: 4,
       });
     }

@@ -292,9 +292,17 @@ async function analyzeCommunication(communication) {
       return validateAndNormalizeAnalysis(rawData);
     } catch (err) {
       lastError = err;
-      const isTransient = err.message && (err.message.includes('503') || err.message.includes('429') || err.message.includes('high demand'));
+      const errMsg = err.message || '';
+      const isQuota = err.status === 429 || /429|resource_exhausted|quota/i.test(errMsg);
+
+      // Fast-fail on quota exhaustion without burning retries
+      if (isQuota) {
+        throw err;
+      }
+
+      const isTransient = errMsg.includes('503') || errMsg.includes('high demand') || errMsg.includes('overloaded');
       if (isTransient && attempt < 2) {
-        console.warn(`[gemini-service] Transient error on attempt ${attempt}, retrying in 2s...`);
+        console.warn(`[gemini-service] Transient 503 error on attempt ${attempt}, retrying in 2s...`);
         await new Promise(r => setTimeout(r, 2000));
         continue;
       }

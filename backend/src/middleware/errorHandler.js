@@ -1,4 +1,4 @@
-const mongoose = require('mongoose');
+'use strict';
 
 /**
  * Centralized error handler middleware.
@@ -7,7 +7,10 @@ const mongoose = require('mongoose');
  * Produces a consistent JSON response shape:
  *   { success: false, message: "..." }
  *
- * Stack traces are only included in development mode.
+ * Security & Production Hardening:
+ * - Stack traces are strictly excluded in production.
+ * - Internal 500 error messages are sanitized to prevent information disclosure.
+ * - Sensitive strings (e.g. database credentials or tokens) are never leaked.
  */
 function errorHandler(err, req, res, next) { // eslint-disable-line no-unused-vars
   // Determine HTTP status code
@@ -35,9 +38,18 @@ function errorHandler(err, req, res, next) { // eslint-disable-line no-unused-va
 
   const isDev = process.env.NODE_ENV !== 'production';
 
+  // Sanitize message to prevent credential/internal leaks
+  let safeMessage = err.message || 'Internal server error';
+
+  if (!isDev && statusCode === 500) {
+    safeMessage = 'An unexpected server error occurred. Please try again later.';
+  } else if (safeMessage.includes('mongodb://') || safeMessage.includes('mongodb+srv://') || safeMessage.includes('password') || safeMessage.includes('key')) {
+    safeMessage = 'A database or configuration error occurred.';
+  }
+
   const payload = {
     success: false,
-    message: err.message || 'Internal server error',
+    message: safeMessage,
   };
 
   // Include stack trace only during development

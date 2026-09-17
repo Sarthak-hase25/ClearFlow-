@@ -36,10 +36,14 @@ const app = express();
 
 // ─── 4. Core Middleware ───────────────────────────────────────────────────────
 
-// CORS — restrict to the configured client origin
-const clientUrl = process.env.CLIENT_URL || 'http://localhost:5173';
+// CORS — restrict to the configured client origin(s)
+const rawClientUrl = process.env.CLIENT_URL || 'http://localhost:5173';
+const allowedOrigins = rawClientUrl.includes(',')
+  ? rawClientUrl.split(',').map(s => s.trim()).filter(Boolean)
+  : rawClientUrl;
+
 app.use(cors({
-  origin: clientUrl,
+  origin: allowedOrigins,
   methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization'],
   credentials: true,
@@ -76,7 +80,7 @@ async function startServer() {
     app.listen(PORT, () => {
       console.log(`\n🚀  ArchFlow API running on http://localhost:${PORT}`);
       console.log(`📡  Health check: http://localhost:${PORT}/api/health`);
-      console.log(`🌐  CORS origin:  ${clientUrl}`);
+      console.log(`🌐  CORS origin:  ${rawClientUrl}`);
       console.log(`⚙️   Environment:  ${process.env.NODE_ENV || 'development'}\n`);
     });
   } catch (err) {
