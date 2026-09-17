@@ -5,7 +5,8 @@ import {
 } from 'lucide-react';
 import { useApp } from '../hooks/useAppState';
 import { SourceBadge } from '../components/ui/Badges';
-import { formatRelativeTime, getPriorityColor, getSeverityColor } from '../utils/formatters';
+import { PageLoader } from '../components/ui/LoadingSpinner';
+import { formatRelativeTime, getTimeGreeting, getPriorityColor, getSeverityColor } from '../utils/formatters';
 
 function StatCard({ icon: Icon, label, value, color = 'blue', subtext, isActionable = false, onClick }) {
   const styles = {
@@ -221,7 +222,12 @@ export default function Dashboard() {
     getRecentCommunications,
     communications,
     projects,
+    loadingProjects,
   } = useApp();
+
+  if (loadingProjects && projects.length === 0) {
+    return <PageLoader />;
+  }
 
   const stats       = getDashboardStats();
   const attention   = getNeedsAttention();
@@ -246,7 +252,7 @@ export default function Dashboard() {
             <span>Modern Villa · Project Intelligence</span>
           </div>
           <h1 className="text-2xl sm:text-3xl font-extrabold text-gray-900 tracking-tight">
-            Good morning, Sarthak
+            {getTimeGreeting()}, Sarthak
           </h1>
           <p className="text-sm text-gray-500 mt-0.5">
             What needs your attention across project communication today

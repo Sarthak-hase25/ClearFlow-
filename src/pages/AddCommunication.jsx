@@ -90,11 +90,11 @@ export default function AddCommunication() {
       setAnalyzing(false);
       console.error('[AddCommunication] Analysis error:', err);
 
-      // Clean, human-readable error presentation without exposing credentials or stack traces (T14)
+      // Clean, human-readable error presentation without exposing credentials or stack traces
       let displayMsg = 'Unable to analyze this communication right now. Please try again.';
       const rawMsg = err.message || '';
       if (rawMsg.includes('quota') || rawMsg.includes('RESOURCE_EXHAUSTED') || rawMsg.includes('429')) {
-        displayMsg = 'Gemini API free tier quota limit reached. Please wait a moment and try again.';
+        displayMsg = 'Gemini API free tier quota limit reached. Please wait a moment and try again. Your communication has been saved to the project workspace and can be re-analyzed anytime.';
       } else if (rawMsg.includes('Unable to connect') || rawMsg.includes('Failed to fetch') || rawMsg.includes('network')) {
         displayMsg = 'Unable to connect to the ArchFlow backend server. Please verify that the backend is running.';
       } else if (rawMsg && !rawMsg.includes('{') && !rawMsg.includes('at ') && rawMsg.length < 150) {
