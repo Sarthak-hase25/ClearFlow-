@@ -188,6 +188,86 @@ async function getInsightById(req, res, next) {
   }
 }
 
+/**
+ * PATCH /api/actions/:id/status
+ *
+ * Update an Action's status ('pending', 'in-progress', 'completed').
+ */
+async function updateActionStatus(req, res, next) {
+  try {
+    const { id } = req.params;
+    const { status } = req.body;
+
+    if (!isValidObjectId(id)) {
+      return res.status(400).json({ success: false, message: 'Invalid action ID' });
+    }
+
+    const validStatuses = ['pending', 'in-progress', 'completed'];
+    if (!status || !validStatuses.includes(status)) {
+      return res.status(400).json({
+        success: false,
+        message: `Status must be one of: ${validStatuses.join(', ')}`,
+      });
+    }
+
+    const action = await Action.findByIdAndUpdate(
+      id,
+      { status },
+      { new: true, runValidators: true }
+    );
+
+    if (!action) {
+      return res.status(404).json({ success: false, message: 'Action not found' });
+    }
+
+    res.json({ success: true, data: action });
+  } catch (err) {
+    next(err);
+  }
+}
+
+/**
+ * PATCH /api/decisions/:id/status
+ *
+ * Update a Decision's status ('open', 'decided', or 'confirmed').
+ */
+async function updateDecisionStatus(req, res, next) {
+  try {
+    const { id } = req.params;
+    let { status } = req.body;
+
+    if (!isValidObjectId(id)) {
+      return res.status(400).json({ success: false, message: 'Invalid decision ID' });
+    }
+
+    // Map frontend 'confirmed' to schema 'decided'
+    if (status === 'confirmed') status = 'decided';
+    if (status === 'pending') status = 'open';
+
+    const validStatuses = ['open', 'decided'];
+    if (!status || !validStatuses.includes(status)) {
+      return res.status(400).json({
+        success: false,
+        message: 'Status must be one of: open, decided, confirmed',
+      });
+    }
+
+    const decision = await Decision.findByIdAndUpdate(
+      id,
+      { status },
+      { new: true, runValidators: true }
+    );
+
+    if (!decision) {
+      return res.status(404).json({ success: false, message: 'Decision not found' });
+    }
+
+    res.json({ success: true, data: decision });
+  } catch (err) {
+    next(err);
+  }
+}
+
 module.exports = {
   getProjectIntelligence,
   getProjectInsights,
@@ -195,4 +275,6 @@ module.exports = {
   getProjectDecisions,
   getProjectRisks,
   getInsightById,
+  updateActionStatus,
+  updateDecisionStatus,
 };

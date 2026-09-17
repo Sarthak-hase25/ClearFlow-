@@ -8,6 +8,7 @@ import { formatDate } from '../utils/formatters';
 import { EmptyState } from '../components/ui/EmptyState';
 
 import { PageLoader } from '../components/ui/LoadingSpinner';
+import { DeleteConfirmModal } from '../components/ui/DeleteConfirmModal';
 
 function NewProjectModal({ onClose, onSave }) {
   const [form, setForm] = useState({ name: '', description: '', type: 'Residential', location: '', status: 'active' });
@@ -179,17 +180,26 @@ function ProjectCard({ project, stats, onDelete }) {
 export default function Projects() {
   const { projects, addProject, deleteProject, getProjectStats, loadingProjects, apiError, refreshData } = useApp();
   const [showModal, setShowModal] = useState(false);
+  const [projectToDelete, setProjectToDelete] = useState(null);
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [deleteError, setDeleteError] = useState('');
 
-  const handleDelete = async (project) => {
-    const confirmed = window.confirm(
-      `Are you sure you want to delete "${project.name}"?\n\nThis will permanently remove the project and all of its communications, insights, actions, decisions, and risks.`
-    );
-    if (!confirmed) return;
+  const handleDelete = (project) => {
+    setProjectToDelete(project);
+    setDeleteError('');
+  };
 
+  const confirmDelete = async () => {
+    if (!projectToDelete || isDeleting) return;
+    setIsDeleting(true);
+    setDeleteError('');
     try {
-      await deleteProject(project.id);
+      await deleteProject(projectToDelete.id);
+      setIsDeleting(false);
+      setProjectToDelete(null);
     } catch (err) {
-      alert(err.message || 'Failed to delete project.');
+      setIsDeleting(false);
+      setDeleteError(err.message || 'Failed to delete project.');
     }
   };
 
@@ -204,6 +214,20 @@ export default function Projects() {
           onSave={addProject}
         />
       )}
+
+      <DeleteConfirmModal
+        isOpen={Boolean(projectToDelete)}
+        onClose={() => {
+          if (!isDeleting) {
+            setProjectToDelete(null);
+            setDeleteError('');
+          }
+        }}
+        onConfirm={confirmDelete}
+        projectName={projectToDelete?.name}
+        isDeleting={isDeleting}
+        error={deleteError}
+      />
 
       {/* Header */}
       <div className="flex items-start justify-between gap-4">

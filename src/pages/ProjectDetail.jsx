@@ -10,6 +10,7 @@ import { Select } from '../components/ui/Select';
 import { formatRelativeTime, getSeverityColor } from '../utils/formatters';
 import { EmptyState } from '../components/ui/EmptyState';
 import { PageLoader } from '../components/ui/LoadingSpinner';
+import { DeleteConfirmModal } from '../components/ui/DeleteConfirmModal';
 
 export default function ProjectDetail() {
   const { id } = useParams();
@@ -30,6 +31,9 @@ export default function ProjectDetail() {
   const [activeTab, setActiveTab] = useState('overview'); // overview | communications | actions | decisions | risks
   const [analyzingId, setAnalyzingId] = useState(null);
   const [analysisError, setAnalysisError] = useState('');
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [deleteError, setDeleteError] = useState('');
 
   const project        = getProjectById(id);
   const communications = getCommunicationsByProject(id);
@@ -69,20 +73,41 @@ export default function ProjectDetail() {
   const displayedActions = highActions.length > 0 ? highActions : pendingActions;
   const recentComms     = communications.slice(0, 4);
 
-  const handleDeleteProject = async () => {
-    if (!window.confirm(`Are you sure you want to delete "${project.name}"?\n\nThis will permanently delete the project and all associated communications, insights, actions, decisions, and risks.`)) {
-      return;
-    }
+  const handleDeleteProject = () => {
+    setShowDeleteModal(true);
+    setDeleteError('');
+  };
+
+  const confirmDelete = async () => {
+    if (isDeleting) return;
+    setIsDeleting(true);
+    setDeleteError('');
     try {
       await deleteProject(project.id);
+      setIsDeleting(false);
+      setShowDeleteModal(false);
       navigate('/projects');
     } catch (err) {
-      alert(err.message || 'Failed to delete project.');
+      setIsDeleting(false);
+      setDeleteError(err.message || 'Failed to delete project.');
     }
   };
 
   return (
     <div className="animate-fade-in space-y-7">
+      <DeleteConfirmModal
+        isOpen={showDeleteModal}
+        onClose={() => {
+          if (!isDeleting) {
+            setShowDeleteModal(false);
+            setDeleteError('');
+          }
+        }}
+        onConfirm={confirmDelete}
+        projectName={project.name}
+        isDeleting={isDeleting}
+        error={deleteError}
+      />
 
       {/* Breadcrumb + Project Header */}
       <div>

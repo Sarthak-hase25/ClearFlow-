@@ -10,6 +10,8 @@ const {
   getProjectDecisions,
   getProjectRisks,
   getInsightById,
+  updateActionStatus,
+  updateDecisionStatus,
 } = require('../controllers/intelligenceController');
 
 // ── Project-scoped intelligence routes ────────────────────────────────────────
@@ -24,6 +26,12 @@ router.get('/projects/:projectId/insights',     getProjectInsights);
 router.get('/projects/:projectId/actions',      getProjectActions);
 router.get('/projects/:projectId/decisions',    getProjectDecisions);
 router.get('/projects/:projectId/risks',        getProjectRisks);
+
+// ── Status mutation routes ───────────────────────────────────────────────────
+//   PATCH /api/actions/:id/status
+//   PATCH /api/decisions/:id/status
+router.patch('/actions/:id/status',   updateActionStatus);
+router.patch('/decisions/:id/status', updateDecisionStatus);
 
 // ── Single insight route ──────────────────────────────────────────────────────
 //   GET /api/insights/:id

@@ -326,6 +326,22 @@ export const api = {
     const data = await request(`/insights/${id}`);
     return normalizeInsight(data);
   },
+
+  async updateActionStatus(id, status) {
+    const data = await request(`/actions/${id}/status`, {
+      method: 'PATCH',
+      body: JSON.stringify({ status }),
+    });
+    return normalizeAction(data);
+  },
+
+  async updateDecisionStatus(id, status) {
+    const data = await request(`/decisions/${id}/status`, {
+      method: 'PATCH',
+      body: JSON.stringify({ status }),
+    });
+    return normalizeDecision(data);
+  },
 };
 
 export default api;

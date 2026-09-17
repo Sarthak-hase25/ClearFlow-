@@ -22,19 +22,23 @@ export function AppProvider({ children }) {
   const [apiError, setApiError] = useState(null);
 
   // ─── Load Projects, Communications, and Intelligence on Mount ──
-  const loadInitialData = useCallback(async () => {
+  const loadInitialData = useCallback(async (silent = false) => {
     try {
-      setLoadingProjects(true);
-      setApiError(null);
+      if (!silent) {
+        setLoadingProjects(true);
+        setApiError(null);
+      }
 
       const fetchedProjects = await api.getProjects();
       setProjects(fetchedProjects);
-      setLoadingProjects(false);
+      if (!silent) setLoadingProjects(false);
 
       // Fetch communications and intelligence for all loaded projects
       if (fetchedProjects.length > 0) {
-        setLoadingComms(true);
-        setLoadingIntelligence(true);
+        if (!silent) {
+          setLoadingComms(true);
+          setLoadingIntelligence(true);
+        }
 
         const projectDataPromises = fetchedProjects.map(async (p) => {
           const [comms, intelligence] = await Promise.all([
@@ -71,20 +75,41 @@ export function AppProvider({ children }) {
         setDecisions(allDecisions);
         setRisks(allRisks);
 
-        setLoadingComms(false);
-        setLoadingIntelligence(false);
+        if (!silent) {
+          setLoadingComms(false);
+          setLoadingIntelligence(false);
+        }
       }
     } catch (err) {
       console.error('[ArchFlow] Failed to load projects from API:', err);
-      setApiError(err.message || 'Failed to connect to ArchFlow backend');
-      setLoadingProjects(false);
-      setLoadingComms(false);
-      setLoadingIntelligence(false);
+      if (!silent) {
+        setApiError(err.message || 'Failed to connect to ArchFlow backend');
+        setLoadingProjects(false);
+        setLoadingComms(false);
+        setLoadingIntelligence(false);
+      }
     }
   }, []);
 
   useEffect(() => {
-    loadInitialData();
+    // Initial mount data load
+    loadInitialData(false);
+
+    // Live background sync: refresh data silently every 10 seconds without resetting loaders
+    const intervalId = setInterval(() => {
+      loadInitialData(true);
+    }, 10000);
+
+    // Live revalidation when the user tabs back into the browser window
+    const handleWindowFocus = () => {
+      loadInitialData(true);
+    };
+    window.addEventListener('focus', handleWindowFocus);
+
+    return () => {
+      clearInterval(intervalId);
+      window.removeEventListener('focus', handleWindowFocus);
+    };
   }, [loadInitialData]);
 
   // ─── Fetch communications for a specific project ────────────
@@ -182,17 +207,31 @@ export function AppProvider({ children }) {
     }
   }, [insights]);
 
-  // ─── Actions Status Management (Local/Temporary as per Phase 3E scope)
-  const updateActionStatus = (actionId, newStatus) => {
+  // ─── Actions & Decisions Status Management (Optimistic + Backend Persisted)
+  const updateActionStatus = async (actionId, newStatus) => {
     setActions(prev =>
       prev.map(a => (a.id === actionId || a._id === actionId) ? { ...a, status: newStatus } : a)
     );
+    try {
+      await api.updateActionStatus(actionId, newStatus);
+    } catch (err) {
+      console.error(`[ArchFlow] Failed to persist action status for ${actionId}:`, err);
+      // Silently re-sync state on unexpected error
+      loadInitialData(true);
+    }
   };
 
-  const updateDecisionStatus = (decisionId, newStatus) => {
+  const updateDecisionStatus = async (decisionId, newStatus) => {
     setDecisions(prev =>
       prev.map(d => (d.id === decisionId || d._id === decisionId) ? { ...d, status: newStatus } : d)
     );
+    try {
+      await api.updateDecisionStatus(decisionId, newStatus);
+    } catch (err) {
+      console.error(`[ArchFlow] Failed to persist decision status for ${decisionId}:`, err);
+      // Silently re-sync state on unexpected error
+      loadInitialData(true);
+    }
   };
 
   // ─── Add new communication + insight from analysis ───────────
