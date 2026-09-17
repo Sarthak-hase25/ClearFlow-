@@ -144,14 +144,14 @@ export default function InsightDetail() {
 
           {type === 'decision' && (
             <button
-              onClick={() => updateDecisionStatus(item.id, item.status === 'confirmed' ? 'pending' : 'confirmed')}
+              onClick={() => updateDecisionStatus(item.id, (item.status === 'confirmed' || item.status === 'decided') ? 'open' : 'confirmed')}
               className={`px-3.5 py-1.5 rounded-lg text-xs font-bold border transition-colors cursor-pointer self-start sm:self-auto shadow-sm ${
-                item.status === 'confirmed'
+                item.status === 'confirmed' || item.status === 'decided'
                   ? 'bg-violet-50 text-violet-700 border-violet-200'
                   : 'bg-white text-gray-700 border-gray-200 hover:bg-gray-50'
               }`}
             >
-              {item.status === 'confirmed' ? '✓ Decision Confirmed' : 'Mark as Confirmed'}
+              {item.status === 'confirmed' || item.status === 'decided' ? '✓ Decision Confirmed' : 'Mark as Confirmed'}
             </button>
           )}
         </div>

@@ -22,13 +22,13 @@ export default function Actions() {
   // Counters
   const pendingCount = actions.filter(a => a.status === 'pending').length;
   const inProgressCount = actions.filter(a => a.status === 'in-progress').length;
-  const highPriorityCount = actions.filter(a => a.priority === 'high' && a.status === 'pending').length;
+  const highPriorityCount = actions.filter(a => a.priority?.toLowerCase() === 'high' && a.status === 'pending').length;
   const completedCount = actions.filter(a => a.status === 'completed').length;
 
   const filtered = actions.filter(action => {
     if (projectFilter !== 'All' && action.projectId !== projectFilter) return false;
     if (statusFilter !== 'All' && action.status !== statusFilter) return false;
-    if (priorityFilter !== 'All' && action.priority !== priorityFilter) return false;
+    if (priorityFilter !== 'All' && action.priority?.toLowerCase() !== priorityFilter.toLowerCase()) return false;
     if (search.trim()) {
       const q = search.toLowerCase();
       const matchTitle = action.title.toLowerCase().includes(q);

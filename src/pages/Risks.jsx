@@ -18,12 +18,18 @@ export default function Risks() {
   const [severityFilter, setSeverityFilter] = useState('All');
   const [search, setSearch]                 = useState('');
 
-  const highCount = risks.filter(r => r.severity === 'high').length;
-  const mediumCount = risks.filter(r => r.severity === 'medium').length;
+  const highCount = risks.filter(r => r.severity?.toLowerCase() === 'high' || r.severity?.toLowerCase() === 'critical').length;
+  const mediumCount = risks.filter(r => r.severity?.toLowerCase() === 'medium').length;
 
   const filtered = risks.filter(risk => {
     if (projectFilter !== 'All' && risk.projectId !== projectFilter) return false;
-    if (severityFilter !== 'All' && risk.severity !== severityFilter) return false;
+    if (severityFilter !== 'All') {
+      const s = risk.severity?.toLowerCase();
+      if (severityFilter === 'high' && s !== 'high' && s !== 'critical') return false;
+      if (severityFilter === 'critical' && s !== 'critical') return false;
+      if (severityFilter === 'medium' && s !== 'medium') return false;
+      if (severityFilter === 'low' && s !== 'low') return false;
+    }
     if (search.trim()) {
       const q = search.toLowerCase();
       const matchTitle = risk.title.toLowerCase().includes(q);
@@ -99,6 +105,7 @@ export default function Risks() {
               onChange={setSeverityFilter}
               options={[
                 { value: 'All', label: 'All Severities' },
+                { value: 'critical', label: 'Critical Severity' },
                 { value: 'high', label: 'High Severity' },
                 { value: 'medium', label: 'Medium Severity' },
                 { value: 'low', label: 'Low Severity' },

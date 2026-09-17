@@ -17,17 +17,22 @@ export default function Decisions() {
   const [statusFilter, setStatusFilter]   = useState('All');
   const [search, setSearch]             = useState('');
 
-  const pendingCount = decisions.filter(d => d.status === 'pending').length;
-  const confirmedCount = decisions.filter(d => d.status === 'confirmed').length;
+  const pendingCount = decisions.filter(d => d.status === 'pending' || d.status === 'open').length;
+  const confirmedCount = decisions.filter(d => d.status === 'confirmed' || d.status === 'decided').length;
 
   const filtered = decisions.filter(dec => {
     if (projectFilter !== 'All' && dec.projectId !== projectFilter) return false;
-    if (statusFilter !== 'All' && dec.status !== statusFilter) return false;
+    if (statusFilter !== 'All') {
+      const isConfirmed = dec.status === 'confirmed' || dec.status === 'decided';
+      if (statusFilter === 'pending' && isConfirmed) return false;
+      if (statusFilter === 'confirmed' && !isConfirmed) return false;
+    }
     if (search.trim()) {
       const q = search.toLowerCase();
-      const matchTitle = dec.title.toLowerCase().includes(q);
+      const matchTitle = dec.title?.toLowerCase().includes(q);
       const matchDesc = dec.description?.toLowerCase().includes(q);
-      const matchOwner = dec.decisionOwner?.toLowerCase().includes(q);
+      const ownerVal = dec.decidedBy || dec.decisionOwner;
+      const matchOwner = ownerVal?.toLowerCase().includes(q);
       if (!matchTitle && !matchDesc && !matchOwner) return false;
     }
     return true;
@@ -114,7 +119,7 @@ export default function Decisions() {
       ) : (
         <div className="space-y-3">
           {filtered.map(dec => {
-            const isConfirmed = dec.status === 'confirmed';
+            const isConfirmed = dec.status === 'confirmed' || dec.status === 'decided';
             return (
               <div
                 key={dec.id}
@@ -156,7 +161,7 @@ export default function Decisions() {
                   {/* Actions */}
                   <div className="flex items-center gap-2 flex-wrap sm:flex-nowrap pt-2 sm:pt-0 border-t sm:border-t-0 border-gray-100 sm:flex-shrink-0 self-start sm:self-center">
                     <button
-                      onClick={() => updateDecisionStatus(dec.id, isConfirmed ? 'pending' : 'confirmed')}
+                      onClick={() => updateDecisionStatus(dec.id, isConfirmed ? 'open' : 'confirmed')}
                       className={`px-3 py-1.5 rounded-lg text-xs font-semibold border transition-colors cursor-pointer ${
                         isConfirmed
                           ? 'bg-violet-50 text-violet-700 border-violet-200 hover:bg-violet-100'

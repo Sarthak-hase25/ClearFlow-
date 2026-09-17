@@ -64,8 +64,9 @@ export default function ProjectDetail() {
   }
 
   const pendingActions  = actions.filter(a => a.status === 'pending');
-  const highActions     = actions.filter(a => a.priority === 'high' && a.status === 'pending');
-  const openDecisions   = decisions.filter(d => d.status === 'pending');
+  const highActions     = actions.filter(a => a.priority?.toLowerCase() === 'high' && a.status === 'pending');
+  const openDecisions   = decisions.filter(d => d.status === 'open' || d.status === 'pending');
+  const displayedActions = highActions.length > 0 ? highActions : pendingActions;
   const recentComms     = communications.slice(0, 4);
 
   const handleDeleteProject = async () => {
@@ -303,10 +304,12 @@ export default function ProjectDetail() {
 
             {/* High Priority Attention Sidebar */}
             <div className="lg:col-span-2 space-y-6">
-              {/* High Priority Actions */}
+              {/* High Priority / Pending Actions */}
               <div>
                 <div className="flex items-center justify-between mb-3">
-                  <h2 className="text-sm font-bold text-gray-900">Urgent Pending Actions</h2>
+                  <h2 className="text-sm font-bold text-gray-900">
+                    {highActions.length > 0 ? 'Urgent Pending Actions' : 'Pending Actions'}
+                  </h2>
                   <button
                     onClick={() => setActiveTab('actions')}
                     className="text-xs text-blue-600 hover:text-blue-700 font-semibold"
@@ -315,19 +318,21 @@ export default function ProjectDetail() {
                   </button>
                 </div>
 
-                {highActions.length === 0 ? (
+                {displayedActions.length === 0 ? (
                   <div className="bg-emerald-50 border border-emerald-100 rounded-xl p-4 text-center">
-                    <p className="text-xs font-semibold text-emerald-800">No urgent pending actions</p>
+                    <p className="text-xs font-semibold text-emerald-800">No pending actions</p>
                   </div>
                 ) : (
                   <div className="space-y-2">
-                    {highActions.map(action => (
+                    {displayedActions.slice(0, 3).map(action => (
                       <button
                         key={action.id}
                         onClick={() => navigate(`/insight/action/${action.id}`)}
                         className="attention-item w-full text-left group"
                       >
-                        <div className="w-2 h-2 rounded-full flex-shrink-0 mt-1 bg-red-500" />
+                        <div className={`w-2 h-2 rounded-full flex-shrink-0 mt-1 ${
+                          action.priority?.toLowerCase() === 'high' ? 'bg-red-500' : 'bg-amber-500'
+                        }`} />
                         <div className="min-w-0">
                           <p className="text-xs font-semibold text-gray-900 group-hover:text-blue-600 leading-snug line-clamp-2">
                             {action.title}
@@ -374,7 +379,7 @@ export default function ProjectDetail() {
                             {dec.title}
                           </p>
                           <p className="text-[10px] text-gray-400 mt-0.5">
-                            Owner: {dec.decisionOwner && dec.decisionOwner !== 'Not specified' ? dec.decisionOwner : 'Not specified'}
+                            Owner: {(dec.decidedBy && dec.decidedBy !== 'null' && dec.decidedBy !== 'Not specified') ? dec.decidedBy : ((dec.decisionOwner && dec.decisionOwner !== 'null' && dec.decisionOwner !== 'Not specified') ? dec.decisionOwner : 'Not specified')}
                           </p>
                         </div>
                       </button>
@@ -639,20 +644,20 @@ export default function ProjectDetail() {
                     </div>
                     <p className="text-xs text-gray-600 leading-relaxed">{dec.description}</p>
                     <p className="text-xs text-gray-400">
-                      Owner: <strong className="text-gray-700 font-medium">{dec.decisionOwner && dec.decisionOwner !== 'Not specified' ? dec.decisionOwner : 'Not specified'}</strong>
+                      Owner: <strong className="text-gray-700 font-medium">{(dec.decidedBy && dec.decidedBy !== 'null' && dec.decidedBy !== 'Not specified') ? dec.decidedBy : ((dec.decisionOwner && dec.decisionOwner !== 'null' && dec.decisionOwner !== 'Not specified') ? dec.decisionOwner : 'Not specified')}</strong>
                     </p>
                   </div>
 
                   <div className="flex items-center gap-2 flex-wrap sm:flex-nowrap pt-2 sm:pt-0 border-t sm:border-t-0 border-gray-100 sm:flex-shrink-0">
                     <button
-                      onClick={() => updateDecisionStatus(dec.id, dec.status === 'confirmed' ? 'pending' : 'confirmed')}
+                      onClick={() => updateDecisionStatus(dec.id, (dec.status === 'confirmed' || dec.status === 'decided') ? 'open' : 'confirmed')}
                       className={`px-3 py-1.5 rounded-lg text-xs font-semibold border transition-colors cursor-pointer ${
-                        dec.status === 'confirmed'
+                        dec.status === 'confirmed' || dec.status === 'decided'
                           ? 'bg-violet-50 text-violet-700 border-violet-200'
                           : 'bg-white text-gray-700 border-gray-200 hover:bg-gray-50'
                       }`}
                     >
-                      {dec.status === 'confirmed' ? '✓ Confirmed' : 'Mark Confirmed'}
+                      {dec.status === 'confirmed' || dec.status === 'decided' ? '✓ Confirmed' : 'Mark Confirmed'}
                     </button>
 
                     <button

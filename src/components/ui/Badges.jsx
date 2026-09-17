@@ -12,21 +12,23 @@ export function SourceBadge({ source }) {
 }
 
 export function PriorityBadge({ priority }) {
-  const c = getPriorityColor(priority);
+  const norm = priority?.toLowerCase();
+  const c = getPriorityColor(norm);
   const labels = { high: 'High', medium: 'Medium', low: 'Low' };
   return (
     <span className={`source-badge ${c.bg} ${c.text}`}>
-      {labels[priority] || 'Unknown'}
+      {labels[norm] || priority || 'Normal'}
     </span>
   );
 }
 
 export function SeverityBadge({ severity }) {
-  const c = getSeverityColor(severity);
-  const labels = { high: 'High', medium: 'Medium', low: 'Low' };
+  const norm = severity?.toLowerCase();
+  const c = getSeverityColor(norm);
+  const labels = { critical: 'Critical', high: 'High', medium: 'Medium', low: 'Low' };
   return (
     <span className={`source-badge ${c.bg} ${c.text}`}>
-      Risk: {labels[severity] || 'Unknown'}
+      Risk: {labels[norm] || severity || 'Identified'}
     </span>
   );
 }
@@ -35,9 +37,12 @@ export function StatusBadge({ status }) {
   const c = getStatusColor(status);
   const labels = {
     pending:      'Pending',
+    open:         'Open',
     'in-progress':'In Progress',
     completed:    'Completed',
     resolved:     'Resolved',
+    decided:      'Decided',
+    confirmed:    'Confirmed',
   };
   return (
     <span className={`source-badge ${c.bg} ${c.text}`}>

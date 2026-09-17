@@ -93,29 +93,35 @@ export const getSourceColor = (source) =>
 // ─── Priority color map ───────────────────────────────────────
 
 export const getPriorityColor = (priority) => {
+  const norm = priority?.toLowerCase();
   const map = {
     high:   { bg: 'bg-red-50',    text: 'text-red-700',    dot: 'bg-red-500',    border: 'border-red-200'   },
     medium: { bg: 'bg-amber-50',  text: 'text-amber-700',  dot: 'bg-amber-500',  border: 'border-amber-200' },
     low:    { bg: 'bg-green-50',  text: 'text-green-700',  dot: 'bg-green-500',  border: 'border-green-200' },
   };
-  return map[priority] || { bg: 'bg-gray-50', text: 'text-gray-600', dot: 'bg-gray-400', border: 'border-gray-200' };
+  return map[norm] || { bg: 'bg-gray-50', text: 'text-gray-600', dot: 'bg-gray-400', border: 'border-gray-200' };
 };
 
 export const getSeverityColor = (severity) => {
+  const norm = severity?.toLowerCase();
   const map = {
-    high:   { bg: 'bg-red-50',    text: 'text-red-700',    dot: 'bg-red-500'    },
-    medium: { bg: 'bg-orange-50', text: 'text-orange-700', dot: 'bg-orange-500' },
-    low:    { bg: 'bg-yellow-50', text: 'text-yellow-700', dot: 'bg-yellow-500' },
+    critical:{ bg: 'bg-red-100',   text: 'text-red-800',    dot: 'bg-red-600'    },
+    high:    { bg: 'bg-red-50',    text: 'text-red-700',    dot: 'bg-red-500'    },
+    medium:  { bg: 'bg-orange-50', text: 'text-orange-700', dot: 'bg-orange-500' },
+    low:     { bg: 'bg-yellow-50', text: 'text-yellow-700', dot: 'bg-yellow-500' },
   };
-  return map[severity] || { bg: 'bg-gray-50', text: 'text-gray-600', dot: 'bg-gray-400' };
+  return map[norm] || { bg: 'bg-gray-50', text: 'text-gray-600', dot: 'bg-gray-400' };
 };
 
 export const getStatusColor = (status) => {
   const map = {
     pending:      { bg: 'bg-gray-100',   text: 'text-gray-600'   },
+    open:         { bg: 'bg-violet-50',  text: 'text-violet-700' },
     'in-progress':{ bg: 'bg-blue-50',    text: 'text-blue-700'   },
     completed:    { bg: 'bg-green-50',   text: 'text-green-700'  },
     resolved:     { bg: 'bg-green-50',   text: 'text-green-700'  },
+    decided:      { bg: 'bg-violet-50',  text: 'text-violet-700' },
+    confirmed:    { bg: 'bg-violet-50',  text: 'text-violet-700' },
   };
   return map[status] || { bg: 'bg-gray-100', text: 'text-gray-600' };
 };
