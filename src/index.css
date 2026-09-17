@@ -1,0 +1,166 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  *, *::before, *::after {
+    box-sizing: border-box;
+  }
+
+  html {
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  body {
+    @apply bg-gray-50 text-gray-900 font-sans;
+  }
+
+  /* Custom scrollbar */
+  ::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+  ::-webkit-scrollbar-track {
+    @apply bg-transparent;
+  }
+  ::-webkit-scrollbar-thumb {
+    @apply bg-gray-300 rounded-full;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    @apply bg-gray-400;
+  }
+}
+
+@layer components {
+  /* Sidebar nav link */
+  .nav-link {
+    @apply flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-slate-400
+           transition-all duration-150 hover:text-white hover:bg-white/10 cursor-pointer;
+  }
+  .nav-link.active {
+    @apply text-white bg-white/15;
+  }
+
+  /* Source badge */
+  .source-badge {
+    @apply inline-flex items-center px-2 py-0.5 rounded text-xs font-semibold uppercase tracking-wide;
+  }
+
+  /* Section heading */
+  .section-heading {
+    @apply text-xs font-semibold uppercase tracking-widest text-gray-400 mb-3;
+  }
+
+  /* Divider */
+  .divider {
+    @apply border-t border-gray-100 my-6;
+  }
+
+  /* Card base */
+  .card {
+    @apply bg-white rounded-xl border border-gray-100 shadow-sm;
+  }
+
+  /* Input base */
+  .input {
+    @apply w-full px-3.5 py-2 text-sm border border-gray-200 rounded-lg
+           bg-white text-gray-900 placeholder-gray-400
+           hover:border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500
+           transition-all duration-150 shadow-sm;
+  }
+
+  /* Select base - SaaS styled with clean custom chevron */
+  .select {
+    @apply w-full pl-3.5 pr-9 py-2 text-sm border border-gray-200 rounded-lg
+           bg-white text-gray-900 font-medium
+           hover:border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500
+           transition-all duration-150 cursor-pointer shadow-sm;
+    appearance: none;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%2364748b' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='m6 8 4 4 4-4'/%3e%3c/svg%3e");
+    background-position: right 0.65rem center;
+    background-repeat: no-repeat;
+    background-size: 1.25rem 1.25rem;
+  }
+
+  /* Compact select for cards and inline tables */
+  .select-sm {
+    @apply pl-2.5 pr-7 py-1.5 text-xs font-medium border border-gray-200 rounded-lg
+           bg-white text-gray-700
+           hover:border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500
+           transition-all duration-150 cursor-pointer shadow-sm;
+    appearance: none;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%2364748b' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='m6 8 4 4 4-4'/%3e%3c/svg%3e");
+    background-position: right 0.45rem center;
+    background-repeat: no-repeat;
+    background-size: 1.05rem 1.05rem;
+  }
+
+  /* Textarea base */
+  .textarea {
+    @apply w-full px-3.5 py-2.5 text-sm border border-gray-200 rounded-lg
+           bg-white text-gray-900 placeholder-gray-400 resize-none
+           hover:border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500
+           transition-all duration-150 shadow-sm;
+  }
+
+  /* Button primary */
+  .btn-primary {
+    @apply inline-flex items-center justify-center gap-2 px-4 py-2 text-sm font-semibold
+           text-white bg-blue-600 rounded-lg shadow-sm
+           hover:bg-blue-700 active:bg-blue-800 active:scale-[0.99]
+           focus:outline-none focus:ring-2 focus:ring-blue-500/30
+           transition-all duration-150 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer;
+  }
+
+  /* Button secondary */
+  .btn-secondary {
+    @apply inline-flex items-center justify-center gap-2 px-3.5 py-2 text-sm font-medium
+           text-gray-700 bg-white border border-gray-200 rounded-lg shadow-sm
+           hover:bg-gray-50 hover:border-gray-300 active:bg-gray-100 active:scale-[0.99]
+           focus:outline-none focus:ring-2 focus:ring-gray-200
+           transition-all duration-150 cursor-pointer;
+  }
+
+  /* Button ghost */
+  .btn-ghost {
+    @apply inline-flex items-center justify-center gap-2 px-3 py-2 text-sm font-medium
+           text-gray-600 rounded-lg
+           hover:bg-gray-100 hover:text-gray-900 active:bg-gray-200/70
+           focus:outline-none focus:ring-2 focus:ring-gray-200
+           transition-all duration-150 cursor-pointer;
+  }
+
+  /* Attention item */
+  .attention-item {
+    @apply flex items-start gap-3 p-3.5 rounded-lg border border-gray-100
+           hover:border-gray-200 hover:bg-gray-50/50 transition-all duration-150 cursor-pointer;
+  }
+
+  /* Stat card */
+  .stat-card {
+    @apply bg-white rounded-xl border border-gray-100 shadow-sm p-4 sm:p-5;
+  }
+}
+
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
+  }
+
+  /* Hide scrollbar for Chrome, Safari and Opera */
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+  /* Hide scrollbar for IE, Edge and Firefox */
+  .no-scrollbar {
+    -ms-overflow-style: none;  /* IE and Edge */
+    scrollbar-width: none;  /* Firefox */
+  }
+}
